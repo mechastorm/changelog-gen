@@ -14,10 +14,8 @@
         "changelog-gen": "./bin/changelog-gen"
     },
     "scripts": {
-        "start": "node changelog-gen",
-//        "test": "vows --spec --isolate"
+        "start": "node changelog-gen"
     },
-//    "main": "./lib/http-server",
     "repository": {
         "type": "git",
         "url": "https://github.com/mechastorm/changelog-gen.git"
