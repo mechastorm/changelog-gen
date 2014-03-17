@@ -35,7 +35,7 @@ npm install https://github.com/mechastorm/changelog-gen/tarball/master
 
 ```shell
 
-sudo npm -g install https://github.com/mechastorm/changelog-gen/tarball/master
+sudo npm install -g https://github.com/mechastorm/changelog-gen/tarball/master
 
 ```
 
