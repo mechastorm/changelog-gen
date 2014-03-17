@@ -146,11 +146,14 @@ function generateChangelog(settings, changeLogList, issueList) {
         output = template.render(data);
 
         var filename = currentDir+'/changelog-generated';
-        console.log(filename);
+
         fs.writeFile(filename, output, function(err){
             if (err){
                 return console.log(err)
             }
+
+            console.log("Generated file at '"+filename+"'");
+            return;
         })
     });
 }

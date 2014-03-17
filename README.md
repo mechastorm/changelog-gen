@@ -21,9 +21,21 @@ The changelog consist of the format
 
 *Installation*
 
+** Local **
+
+Assuming you are doing this on the repo you plan to generate the changelog on
+
 ```shell
 
 npm install https://github.com/mechastorm/changelog-gen/tarball/master
+
+```
+
+** Global **
+
+```shell
+
+sudo npm -g install https://github.com/mechastorm/changelog-gen/tarball/master
 
 ```
 
@@ -49,5 +61,11 @@ npm install https://github.com/mechastorm/changelog-gen/tarball/master
 2. Run the command
 
 ```shell
+
+# If you installed globally
 changelog-gen [git-commit-id-or-tag]
+
+# If you installed locally
+node node_modules/changelog-gen/bin/changelog-gen [git-commit-id-or-tag]
+
 ```
