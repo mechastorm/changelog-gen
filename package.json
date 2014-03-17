@@ -1,0 +1,43 @@
+{
+    "name": "changelog-gen",
+    "preferGlobal": true,
+    "version": "0.1.0",
+    "author": "Mechastorm <github@mechaloid.com>",
+    "description": "Changelog Generator",
+    "contributors": [
+        {
+            "name": "Shih Oon Liong",
+            "email": "shihoon@mechaloid.com"
+        }
+    ],
+    "bin": {
+        "changelog-gen": "./bin/changelog-gen"
+    },
+    "scripts": {
+        "start": "node changelog-gen",
+//        "test": "vows --spec --isolate"
+    },
+//    "main": "./lib/http-server",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mechastorm/changelog-gen.git"
+    },
+    "keywords": [
+        "cli",
+        "changelog"
+    ],
+    "dependencies" : {
+        "minimist"  : "0.0.8",
+        "hogan.js"  : "2.0.0",
+        "jira"      : "0.8.2",
+        "prompt"    : "0.2.12"
+    },
+    "devDependencies": {
+        "winston"   : "0.7.2"
+    },
+    "bundledDependencies": [],
+    "license": "MIT",
+    "engines": {
+        "node": ">=0.10"
+    }
+}

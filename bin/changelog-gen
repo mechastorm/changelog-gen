@@ -1,0 +1,190 @@
+#!/usr/local/bin/node
+
+var
+    hogan = require("hogan.js"),
+    prompt = require('prompt'),
+    fs = require('fs'),
+    configFilename = 'changelog-gen',
+    promptSchema = {
+        properties: {
+            username: {
+                message: 'JIRA username',
+                required: true
+            },
+            password: {
+                message: 'JIRA password',
+                required: true,
+                hidden: true
+            }
+        }
+    },
+    currentDir = process.cwd(),
+    configFilePath = currentDir+"/"+configFilename+".json",
+    argv = require('minimist')(process.argv.slice(2)),
+    exec = require('child_process').exec;
+
+fs.exists(configFilePath, function(exists) {
+    if (!exists) {
+        console.log("Please create a changelog-gen.json file");
+        return false;
+    }
+
+    fs.readFile(configFilePath, 'utf8', function (err, data) {
+        if (err) {
+            console.log('Error: ' + err);
+            return;
+        }
+
+        var settings = JSON.parse(data);
+
+        prompt.override = argv;
+        prompt.start();
+        prompt.get(promptSchema, function (err, result) {
+            settings.jira.username = result.username;
+            settings.jira.password = result.password;
+            settings.commitIdStart = argv._[0];
+            settings.projectId = settings.jira.projectKey;
+            settings.projectBaseUrl = "https://"+settings.jira.host+"/browse/";
+            settings.projectIssuesUrl = "https://"+settings.jira.host+"/issues/?jql=";
+            start(settings);
+        })
+    });
+});
+
+function start(settings){
+    var
+        gitLogCommand = "git log --pretty=oneline "+settings.commitIdStart+"...";
+
+    execute(gitLogCommand, function(output){
+        var changeLogList = parseGitLogs(settings, output);
+
+        // Jira
+        var JiraApi = require('jira').JiraApi,
+            jira = new JiraApi(
+                'https',
+                settings.jira.host,
+                443,
+                settings.jira.username,
+                settings.jira.password,
+                'latest',
+                true,
+                false
+            );
+
+        var
+            issueListOrdered = {},
+            searchString = settings.jira.searchString;
+
+        jira.searchJira(searchString, {"maxResults" : 50, "fields" : ["summary","priority","assignee"]}, function(error, response) {
+            if (error != null) {
+                console.log(error);
+                return false;
+            }
+
+            var issues = response.issues;
+            for (var index in issues) {
+                var
+                    issue = issues[index],
+                    priorityName = issue.fields.priority.name,
+                    priorityId = issue.fields.priority.id,
+                    msg = "";
+
+                msg = "["+issue.key+"]("+settings.projectBaseUrl+issue.key+") "+issue.fields.summary;
+
+                if (!issueListOrdered.hasOwnProperty(priorityId)) {
+                    issueListOrdered[priorityId] = {
+                        "issueName" : priorityName,
+                        "id" : priorityId,
+                        "issueList" : []
+                    };
+                }
+                issueListOrdered[priorityId].issueList.push({
+                    "msg" : msg
+                });
+            }
+
+            var
+                issuesFound = [],
+                count = 0;
+            for (var i in issueListOrdered) {
+                if(count == settings.jira.maxIssuePriorities) continue;
+                issuesFound.push(issueListOrdered[i]);
+                count++;
+            }
+
+            generateChangelog(settings, changeLogList, issuesFound)
+        });
+    });
+}
+
+function execute(command, callback){
+    exec(command, function(error, stdout, stderr){ callback(stdout); });
+}
+
+function generateChangelog(settings, changeLogList, issueList) {
+    // Render
+    var
+        nowTimestamp = new Date(),
+        templatePath = __dirname+'/templates/changelog.template';
+
+    fs.readFile(templatePath, 'utf8', function (err,data) {
+        if (err) {
+            return console.log(err);
+        }
+
+        var
+            template = hogan.compile(data),
+            data = {
+                "date"          : nowTimestamp,
+                "changes"       : changeLogList,
+                "issuesFound"   : issueList,
+                "searchKey"     : settings.jira.searchString,
+                "searchUrl"     : settings.projectIssuesUrl + encodeURIComponent(settings.jira.searchString)
+            },
+            output = "";
+
+        output = template.render(data);
+
+        var filename = currentDir+'/changelog-generated';
+        console.log(filename);
+        fs.writeFile(filename, output, function(err){
+            if (err){
+                return console.log(err)
+            }
+        })
+    });
+}
+
+function parseGitLogs(settings, output){
+    var
+        changeLogList = [],
+        gitLogs = output.split("\n");
+
+    for (index in gitLogs) {
+        var
+            gitLog = gitLogs[index],
+            logMessage = gitLog.substr(gitLog.indexOf(" ") + 1);
+
+        if (logMessage == "") continue;
+
+        var
+            commitId = gitLog.split(' ')[0],
+            ticketPattern = new RegExp('('+settings.projectId+'-*\\d*)', "g"),
+            mdLogMessage = '',
+            isHasMergeBranchMsg = (logMessage.indexOf("Merge branch") != -1);
+
+        if (settings.ignoreMerges && isHasMergeBranchMsg) continue;
+
+        mdLogMessage = logMessage.replace(ticketPattern, "($1)["+settings.projectBaseUrl+"$1]");
+
+        var
+            changelog = {
+                "msg" : mdLogMessage,
+                "commitId" : commitId
+            };
+
+        changeLogList.push(changelog);
+    }
+
+    return changeLogList;
+}

@@ -1,0 +1,10 @@
+{
+    "tracker"   : "jira",
+    "jira"      : {
+        "projectKey"    : "KEY",
+        "host"          : "company.atlassian.net",
+        "searchString"  : "project = KEY AND resolution = Unresolved ORDER BY priority DESC, key DESC",
+        "maxIssuePriorities" : 2
+    },
+    "ignoreMerges" : true
+}

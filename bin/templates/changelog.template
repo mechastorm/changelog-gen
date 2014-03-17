@@ -1,0 +1,18 @@
+{{date}}
+
+*Changes*
+
+{{#changes}}
+- {{{msg}}}
+{{/changes}}
+
+*Known Issues*
+
+[{{searchKey}}]({{{searchUrl}}})
+
+{{#issuesFound}}
+- {{{issueName}}} ({{issueList.length}})
+    {{#issueList}}
+    - {{{msg}}}
+    {{/issueList}}
+{{/issuesFound}}
