@@ -65,7 +65,17 @@ sudo npm -g install https://github.com/mechastorm/changelog-gen/tarball/master
 # If you installed globally
 changelog-gen [git-commit-id-or-tag]
 
+# - Generate ouput as a file
+changelog-gen [git-commit-id-or-tag] -f filename
+
+```
+
+```shell
+
 # If you installed locally
 node node_modules/changelog-gen/bin/changelog-gen [git-commit-id-or-tag]
+
+# - Generate ouput as a file
+node node_modules/changelog-gen/bin/changelog-gen [git-commit-id-or-tag] -f filename
 
 ```

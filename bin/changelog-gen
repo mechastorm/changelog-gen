@@ -23,6 +23,7 @@ var
     argv = require('minimist')(process.argv.slice(2)),
     exec = require('child_process').exec;
 
+console.log(argv);
 fs.exists(configFilePath, function(exists) {
     if (!exists) {
         console.log("Please create a changelog-gen.json file");
@@ -46,6 +47,12 @@ fs.exists(configFilePath, function(exists) {
             settings.projectId = settings.jira.projectKey;
             settings.projectBaseUrl = "https://"+settings.jira.host+"/browse/";
             settings.projectIssuesUrl = "https://"+settings.jira.host+"/issues/?jql=";
+
+            settings.generatedFilename = '';
+            if (argv.f) {
+                settings.generatedFilename = argv.f;
+            }
+
             start(settings);
         })
     });
@@ -135,6 +142,7 @@ function generateChangelog(settings, changeLogList, issueList) {
         var
             template = hogan.compile(data),
             data = {
+                commitIdStart   : settings.commitIdStart,
                 "date"          : nowTimestamp,
                 "changes"       : changeLogList,
                 "issuesFound"   : issueList,
@@ -145,16 +153,19 @@ function generateChangelog(settings, changeLogList, issueList) {
 
         output = template.render(data);
 
-        var filename = currentDir+'/changelog-generated';
+        if (settings.generatedFilename != "") {
+            var filename = currentDir+'/'+settings.generatedFilename;
+            fs.writeFile(filename, output, function(err){
+                if (err){
+                    return console.log(err)
+                }
 
-        fs.writeFile(filename, output, function(err){
-            if (err){
-                return console.log(err)
-            }
-
-            console.log("Generated file at '"+filename+"'");
-            return;
-        })
+                console.log("Generated file at '"+filename+"'");
+                return;
+            })
+        } else {
+            console.log(output);
+        }
     });
 }
 
