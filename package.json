@@ -11,7 +11,7 @@
         }
     ],
     "bin": {
-        "changelog-gen": "./bin/changelog-gen"
+        "changelog-gen": "bin/changelog-gen"
     },
     "scripts": {
         "start": "node changelog-gen"
