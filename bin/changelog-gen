@@ -23,7 +23,6 @@ var
     argv = require('minimist')(process.argv.slice(2)),
     exec = require('child_process').exec;
 
-console.log(argv);
 fs.exists(configFilePath, function(exists) {
     if (!exists) {
         console.log("Please create a changelog-gen.json file");
