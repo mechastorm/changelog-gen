@@ -188,7 +188,7 @@ function parseGitLogs(settings, output){
 
         if (settings.ignoreMerges && isHasMergeBranchMsg) continue;
 
-        mdLogMessage = logMessage.replace(ticketPattern, "($1)["+settings.projectBaseUrl+"$1]");
+        mdLogMessage = logMessage.replace(ticketPattern, "[$1]("+settings.projectBaseUrl+"$1)");
 
         var
             changelog = {
